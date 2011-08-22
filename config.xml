@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>
+<NODEDATA>
+<!--  <CLUSTER IP="129.93.239.148" NAME="red" COLOR="red" WEBSITE="http://rcf.unl.edu/ganglia/">
+-->
+<!-- 
+This section is to demonstrated the 'COMMAND' attribute.  Can be used to create ganglia xml, ie if there are certain requirements to connect to the cluster (or as in this example, you want to monitor a cluster of clusters!) 
+-->
+<!--
+<CLUSTER IP="129.93.229.141" NAME="OSG" COLOR="green" WEBSITE="http://rcf.unl.edu/ganglia/" COMMAND="python scripts/gip_ganglia_xml.py">
+<NODE NAME="deadExample" PRINT="ded"/>
+</CLUSTER>
+-->
+
+  <CLUSTER IP="129.93.239.148" NAME="Red Cluster" COLOR="red" WEBSITE="http://hcc.unl.edu/ganglia/"/>
+<!--    <NODE NAME="dcache02.unl.edu" PRINT="dch"/>
+    <NODE NAME="node023" PRINT="023"/>
+    <NODE NAME="node041" PRINT="041"/>
+    <NODE NAME="node024" PRINT="024"/>
+    <NODE NAME="node060" PRINT="060"/>
+    <NODE NAME="node025" PRINT="025"/>
+    <NODE NAME="node061" PRINT="061"/>
+    <NODE NAME="node043" PRINT="043"/>
+    <NODE NAME="node062" PRINT="062"/>
+    <NODE NAME="node044" PRINT="044"/>
+    <NODE NAME="node026" PRINT="026"/>
+    <NODE NAME="node045" PRINT="045"/>
+    <NODE NAME="node027" PRINT="027"/>
+    <NODE NAME="node028" PRINT="028"/>
+    <NODE NAME="node046" PRINT="046"/>
+    <NODE NAME="node047" PRINT="047"/>
+    <NODE NAME="node029" PRINT="029"/>
+    <NODE NAME="node048" PRINT="048"/>
+    <NODE NAME="node049" PRINT="049"/>
+    <NODE NAME="node010" PRINT="010"/>
+    <NODE NAME="node011" PRINT="011"/>
+    <NODE NAME="node012" PRINT="012"/>
+    <NODE NAME="node030" PRINT="030"/>
+    <NODE NAME="node013" PRINT="013"/>
+    <NODE NAME="node031" PRINT="031"/>
+    <NODE NAME="node032" PRINT="032"/>
+    <NODE NAME="node014" PRINT="014"/>
+    <NODE NAME="node050" PRINT="050"/>
+    <NODE NAME="node051" PRINT="051"/>
+    <NODE NAME="osg-test2.unl.edu" PRINT="osg"/>
+    <NODE NAME="node033" PRINT="033"/>
+    <NODE NAME="node015" PRINT="015"/>
+    <NODE NAME="node016" PRINT="016"/>
+    <NODE NAME="node052" PRINT="052"/>
+    <NODE NAME="node034" PRINT="034"/>
+    <NODE NAME="node035" PRINT="035"/>
+    <NODE NAME="osg-test1.unl.edu" PRINT="osg"/>
+    <NODE NAME="node017" PRINT="017"/>
+    <NODE NAME="node053" PRINT="053"/>
+    <NODE NAME="node036" PRINT="036"/>
+    <NODE NAME="node054" PRINT="054"/>
+    <NODE NAME="node018" PRINT="018"/>
+    <NODE NAME="node019" PRINT="019"/>
+    <NODE NAME="node037" PRINT="037"/>
+    <NODE NAME="node055" PRINT="055"/>
+    <NODE NAME="node038" PRINT="038"/>
+    <NODE NAME="node056" PRINT="056"/>
+    <NODE NAME="node039" PRINT="039"/>
+    <NODE NAME="node057" PRINT="057"/>
+    <NODE NAME="node058" PRINT="058"/>
+    <NODE NAME="node059" PRINT="059"/>
+    <NODE NAME="node001" PRINT="001"/>
+    <NODE NAME="node002" PRINT="002"/>
+    <NODE NAME="node003" PRINT="003"/>
+    <NODE NAME="node004" PRINT="004"/>
+    <NODE NAME="node005" PRINT="005"/>
+    <NODE NAME="node006" PRINT="006"/>
+    <NODE NAME="node007" PRINT="007"/>
+    <NODE NAME="node009" PRINT="009"/>
+    <NODE NAME="node020" PRINT="020"/>
+    <NODE NAME="node021" PRINT="021"/>
+    <NODE NAME="node022" PRINT="022"/>
+    <NODE NAME="node040" PRINT="040"/>
+  </CLUSTER>
+-->  
+<CLUSTER IP="129.93.229.141" NAME="Prairiefire Cluster" COLOR="green" WEBSITE="http://hcc.unl.edu/ganglia/"/>
+<!--
+  <CLUSTER IP="129.93.227.70" NAME="firefly" COLOR="blue" WEBSITE="http://hcc.unl.edu/ganglia/">
+  <NODE NAME="node040" PRINT="040"/>
+  </CLUSTER>
+-->
+
+  <STATS>
+<!-- load_one is a required attribute, to exist, not to print out -->
+    <META NAME="load_one" ORDER="1" PRINT="Load_One"/>
+<!--  
+Uncomment this area if you are using the OSG monitoring.  These stats can be anything that is in the xml read in.
+<META NAME="Running Jobs" PRINT="Running Jobs"/>
+    <META NAME="Free Slots" PRINT="Free Slots"/>
+    <META NAME="Waiting Jobs" PRINT="Waiting Jobs"/>
+    <META NAME="Site Size" PRINT="Site Size"/>
+-->
+<META NAME="cpu_num" PRINT="Cpu_Num"/>
+
+    <META NAME="cpu_user" ORDER="2" PRINT="CPU_User"/>
+    <META NAME="cpu_system" ORDER="3" PRINT="CPU_System"/>
+    <META NAME="cpu_aidle" ORDER="4" PRINT="CPU_Aidle"/>
+    <META NAME="load_five" ORDER="5" PRINT="Load_Five"/>
+    <META NAME="proc_run" ORDER="6" PRINT="Proc_Run"/>
+    <META NAME="mem_free" ORDER="7" PRINT="Mem_Free"/>
+    <META NAME="mem_buffers" ORDER="8" PRINT="Mem_Buffers"/>
+    <META NAME="swap_free" ORDER="9" PRINT="Swap_Free"/>
+    <META NAME="swap_total" ORDER="10" PRINT="Swap_Total"/>
+    <META NAME="cpu_wio" ORDER="11" PRINT="CPU_Wio"/>
+    <META NAME="cpu_nice" ORDER="12" PRINT="CPU_Nice"/>
+    <META NAME="cpu_idle" ORDER="13" PRINT="CPU_Idle"/>
+    <META NAME="proc_total" ORDER="14" PRINT="Proc_Total"/>
+    <META NAME="mem_shared" ORDER="15" PRINT="Mem_Shared"/>
+    <META NAME="mem_cached" ORDER="16" PRINT="Mem_Cached"/>
+  </STATS>
+</NODEDATA>

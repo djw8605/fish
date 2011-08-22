@@ -1,0 +1,220 @@
+#!/usr/bin/perl
+use strict;
+use XML::Xerces;
+use IO::Socket;
+
+XML::Xerces::XMLPlatformUtils::Initialize();
+
+
+my $parser = XML::Xerces::XercesDOMParser->new;
+$parser->setValidationScheme($XML::AbstractDOMParser::Val_Auto);
+$parser->setDoNamespaces(0);
+$parser->setDoSchema(0);
+$parser->setValidationSchemaFullChecking(0);
+$parser->setCreateEntityReferenceNodes(0);
+
+$parser->parse("./config.xml");
+
+my $doc = $parser->getDocument();
+my $element = $doc->getElementsByTagName("CLUSTER");
+	if($ARGV[0] eq "autoconfig") {
+		autoconfig($doc);
+	}
+	elsif($ARGV[0] eq "add") {
+		addCluster($doc);
+	} elsif($ARGV[0] eq "delete") {
+		deleteCluster($doc);
+	
+
+
+} else {
+
+my $found = 0;
+my $i = 0;
+while(!$found) {
+	if($i >= $element->getLength()) {
+		print "Couldn't find cluster specified\n";
+		exit(0);		
+	}
+	my $node = $element->item($i);
+	if(!$node) {
+		print "unable to get elements\n";
+		$i++;
+		next;
+	}
+	my $attr = $node->getAttributes();
+	my $nameNode = $attr->getNamedItem("NAME");
+	my $name = $nameNode->getNodeValue();
+	if($name eq $ARGV[0]) {
+#		print "found ";
+#		print $ARGV[0];
+#		print "\n";
+		$found = 1;
+	} else {
+		$i++;
+	}
+	
+	
+}
+
+	my $cluster = $element->item($i);
+	my $childNodes = $cluster->getChildNodes();
+	
+	if($ARGV[1] eq "add") {
+		&addNode($cluster, $doc);
+	} elsif($ARGV[1] eq "delete") {
+		&deleteNode($cluster, $doc);
+	}
+	
+} #end if cluster change
+	
+	my $impl = XML::Xerces::DOMImplementationRegistry::getDOMImplementation('LS');
+	my $writer = $impl->createDOMWriter();
+	my $target = XML::Xerces::LocalFileFormatTarget->new("./config.xml");
+	$writer->writeNode($target, $doc);
+
+XML::Xerces::XMLPlatformUtils::Terminate();
+
+exit(0);
+
+
+
+sub addNode {
+	my $cluster = $_[0];
+	my $doc = $_[1];
+	my $newNode = $doc->createElement("NODE");
+	if(!$ARGV[2] || !$ARGV[3]) {
+		print "usage - config CLUSTER add NODE_NAME NODE_PRINT\n";
+		exit(0);
+	} elsif (length($ARGV[3]) > 3) {
+		print "NODE_PRINT must be less than 3 characters";
+		exit(0);	
+	}
+	$newNode->setAttribute("NAME", $ARGV[2]);
+	$newNode->setAttribute("PRINT", $ARGV[3]);
+	$cluster->appendChild($newNode);
+	
+
+}
+
+
+sub deleteNode {
+	my $cluster = $_[0];
+	my $doc = $_[1];
+	my $found = 0;
+	my $i = 0;
+	my $element = $cluster->getChildNodes();
+	if(!$ARGV[2]) {
+		print "usage - config CLUSTER delete NODE_NAME\n";
+		exit(0);
+	}
+	while(!$found) {
+		if($i >= $element->getLength()) {
+			print "couldn't find node";
+			exit(0);
+		}
+		my $node = $element->item($i);
+		if(!$node) {
+			print "unable to get elements\n";
+			$i++;
+			next;
+		}
+		my $attr = $node->getAttributes();
+		if(!$attr) {
+			$i++;
+			next;
+		}
+		my $nameNode = $attr->getNamedItem("NAME");
+		my $name = $nameNode->getNodeValue();
+		if($name eq $ARGV[2]) {
+#			print "found ";
+#			print $ARGV[2];
+#			print "\n";
+			$found = 1;
+		} else {
+			$i++;
+		}
+
+	}
+	$cluster->removeChild($element->item($i));
+
+
+}
+
+sub addCluster {
+	my $doc = $_[0];
+	my $nodeData = $doc->getElementsByTagName("NODEDATA");
+	#note, there should only be 1 NODEDATA
+	my $newCluster = $doc->createElement("CLUSTER");
+	if(!$ARGV[1] || !$ARGV[2]) {
+		print "usage - config add CLUSTER_NAME CLUSTER_IP";
+		exit(0);
+	}
+	$newCluster->setAttribute("NAME", $ARGV[1]);
+	$newCluster->setAttribute("IP", $ARGV[2]);
+	$nodeData->item(0)->appendChild($newCluster);
+
+
+
+}
+
+
+sub deleteCluster {
+
+
+
+
+}
+
+
+sub autoconfig {
+	my $doc = $_[0];
+#	yet to be implemented, actual socket connections
+	my $sock = new IO::Socket::INET (
+                                  PeerAddr => $ARGV[1],
+                                  PeerPort => '8649',
+                                  Proto => 'tcp',
+                                 );
+	die "Could not connect to $ARGV[1]" unless $sock;
+	
+	my $readFrom;
+	my $totalRead;
+	my $length = 1000;
+	do {
+	$readFrom = "";
+	$sock->recv($readFrom, $length);
+	$totalRead = $totalRead . $readFrom;
+	print $readFrom;
+	} while ((length($readFrom)) > $length-1000); 
+	print $totalRead;
+	close($sock);
+#	exec "telnet $ARGV[1] 8649 > ./tmp.xml";
+	open(FILE,">./tmp.xml");
+	print FILE $totalRead;
+	
+
+
+	my $parser = XML::Xerces::XercesDOMParser->new;
+	$parser->setValidationScheme($XML::AbstractDOMParser::Val_Auto);
+	$parser->setDoNamespaces(0);
+	$parser->setDoSchema(0);
+	$parser->setValidationSchemaFullChecking(0);
+	$parser->setCreateEntityReferenceNodes(0);
+
+	$parser->parse("./tmp.xml");
+	
+	my $tmpdoc = $parser->getDocument();
+
+	my $element = $tmpdoc->getElementsByTagName("CLUSTER");
+	my $i = 0;
+	for($i = 0; $i < $element->getLength(); $i++) {
+
+		my $cluster = $element->item($i);
+		my $clusterAttr = $cluster->getAttributes();
+		my $clusterNameNode = $clusterAttr->getNamedItem("NAME");
+		my $clusterName = $clusterNameNode->getNodeValue();
+		print "found $clusterName";
+	}
+
+
+}

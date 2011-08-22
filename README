@@ -1,0 +1,11 @@
+FISH VISUAL CLUSTER MONITORING
+WRITTEN BY DEREK WEITZEL AND CORY LUENINGHOENER
+
+
+NOTE THAT THIS PROGRAM REQUIRES XERCESC LIBRARIES AND HEADER FILES, GET THEM AT xerces.apache.org
+
+Also requires Freetype header and library files
+
+After the requirements have been completed, run the command:
+make
+then a program named "aquarium" will be created, run it to start Fish.
