@@ -112,16 +112,16 @@
 
 //speed at which fish will rotate, going in circles.
 //less = fish don't turn at all
-#define ROTATIONSPEED .5
+#define ROTATIONSPEED .75
 
 //effect night has on the finspeed, and normal speed, should slow almost everything
-#define NIGHTFACTOR .1
+#define NIGHTFACTOR .3
 
 //used as the time for the camera to move back
 #define CAMERATIMEOUT 12
 
 // Minimum speed before it reset the position of the fish
-#define MINSPEED 0.2
+#define MINSPEED 1
 #define _MINSPEED MINSPEED*MINSPEED
 
 
@@ -1026,7 +1026,7 @@ void display(void)
 
 	//fish
    for(i=0;i<FISHCOUNT;i++){
-  //   collision_avoidance(i);
+   collision_avoidance(i);
 
 
 
@@ -1123,7 +1123,7 @@ void display(void)
        /* Fishies turn in circles */
        #ifdef COLLISION_H
        if(!picking && (fish[i].alive==1))
-       collision_avoidance(i);
+//       collision_avoidance(i);
 
 
        #endif //COLLISION_H
@@ -1139,8 +1139,14 @@ void display(void)
     fflush(stdout);
    */
 
+
+
     //make sure that all of the angle are between 0 and 360
     if(!picking) {
+
+	fish[i].dx = sin(fish[i].rotation*degrad);
+	fish[i].dz = cos(fish[i].rotation*degrad);
+
     	// if(fish[i].picked)
     	//fish[i].targetrotation = 90;
            if(fish[i].rotation < 0)
@@ -1160,14 +1166,10 @@ void display(void)
 
 
 
-   	if(fabs(fish[i].targetrotation - fish[i].rotation) > 180)
-   		fish[i].rotation -= (fish[i].targetrotation - fish[i].rotation) * fish[i].rotationspeed * ROTATIONSPEED * getTime();// + ((rand()%300)/100);
-   	else
-       	fish[i].rotation += (fish[i].targetrotation - fish[i].rotation) * fish[i].rotationspeed * ROTATIONSPEED * getTime() + ((rand()%300)/100);
-
-
-
-
+      if(fabs(fish[i].targetrotation - fish[i].rotation) > 180)
+	fish[i].rotation -= (fish[i].targetrotation - fish[i].rotation) * fish[i].rotationspeed * ROTATIONSPEED * getTime();// + ((rand()%300)/100);
+      else
+	fish[i].rotation += (fish[i].targetrotation - fish[i].rotation) * fish[i].rotationspeed * ROTATIONSPEED * getTime();// + ((rand()%300)/100);
 
        /*
         *
@@ -1184,24 +1186,26 @@ void display(void)
    	oldLoc[2] = fish[i].location[2];
 
     	   if(fabs(fish[i].targetrotation - fish[i].rotation) > 90)
-    	   		fish[i].speed = 1.5;
-    	   	else
-    	   		fish[i].speed = 2.5;
+	     fish[i].speed = 1.25 * (fish[i].size+0.5);
+    	   else
+	     fish[i].speed = 1.75 * (fish[i].size+0.5);
+		
        /* Fishies swim around */
-       fish[i].location[0] = fish[i].location[0] + ((nightfactor * fish[i].speed * getTime() * FISHSPEED * sin(fish[i].rotation*(degrad)))/(fish[i].size+1.0));
-       fish[i].location[2] = fish[i].location[2] + ((nightfactor * fish[i].speed * getTime() * FISHSPEED * cos(fish[i].rotation*(degrad)))/(fish[i].size+1.0));
-
+       fish[i].location[1] = fish[i].location[1] + ((nightfactor * fish[i].speed * getTime() * FISHSPEED * 0.5 * (fish[i].ydirection))/(fish[i].size+0.75));
+       fish[i].location[0] = fish[i].location[0] + ((nightfactor * fish[i].speed * getTime() * FISHSPEED * fish[i].dx)/(fish[i].size+0.75));
+       fish[i].location[2] = fish[i].location[2] + ((nightfactor * fish[i].speed * getTime() * FISHSPEED * fish[i].dz)/(fish[i].size+0.75));  
+      
 
 	//speed when moving up or down
-       if(fish[i].location[1] > fish[i].homedepth && !fish[i].picked){
+       /*if(fish[i].location[1] > fish[i].homedepth && !fish[i].picked){
 	 fish[i].location[1] += (fish[i].homedepth-fish[i].location[1])/10;
        } else if(fish[i].location[1] < fish[i].homedepth && !fish[i].picked){
        	 fish[i].location[1] += (fish[i].homedepth-fish[i].location[1])/10;
        } else if (fish[i].picked) {
    //    		fish[i].location[1] += (-300-fish[i].location[1])/10;
 
-       }
-
+       }*/
+/*
        if(fish[i].location[0] > xmax-(fish[i].size+1)*30){
 	 fish[i].location[0] = xmax-(fish[i].size+1)*30;
        }
@@ -1215,14 +1219,15 @@ void display(void)
        if(fish[i].location[2] < zmin+(fish[i].size+1)*30){
 	 fish[i].location[2] = zmin+(fish[i].size+1)*30;
        }
-
+*/      
        /* Test if the fish are stationary */
-       double dist = pow(fish[i].location[0] - oldLoc[0],2) + pow(fish[i].location[2] - oldLoc[2], 2);
+/*       double dist = sqrt(pow(fish[i].location[0] - oldLoc[0],2) + pow(fish[i].location[2] - oldLoc[2], 2));
        if(dist < _MINSPEED) {
            fish[i].location[0] = 0.0;
            fish[i].location[2] = 0.0;
 
        }
+*/
 
 
        /* Do some fin wiggling */
@@ -1256,12 +1261,12 @@ void display(void)
        if(fish[i].speed > 1){
 	 fish[i].speed -= .05 * getTime() * DARTDURATION;
 	 //fish[i].location[1] = fish[i].location[1] + (0.5)*((float)fish[i].ydirection);
-       }else{
+       }/*else{
 	 if((rand() % 500) == 10){
 	   fish[i].speed = 4;
 	   fish[i].ydirection = (rand()%3)-1;
 	 }
-       }
+       }*/
      }
  }
      /* Dead fish float to the top */
@@ -1973,11 +1978,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
   for(i=0;i<FISHCOUNT;i++){
  // 	fish[i].num = (char*)malloc(sizeof(char)*4);
+ if ((*fish[i].fishcluster == 'r') || (*fish[i].fishcluster == 'f')){
+    fish[i].location[0] = -(rand() % (int)(1.8*xmax));
+    fish[i].location[1] = (rand() % (int)(1.8*ymax))-(0.9*ymax) + 30;
+    fish[i].location[2] = -(rand() % (int)(1.8*zmax));
+ }
+ else if ((*fish[i].fishcluster == 'p') || (*fish[i].fishcluster == 'b')) {
+    fish[i].location[0] = (rand() % (int)(1.8*xmax));
+    fish[i].location[1] = (rand() % (int)(1.8*ymax))-(0.9*ymax) + 30;
+    fish[i].location[2] = (rand() % (int)(1.8*zmax));
+ }/*
     fish[i].location[0] = (rand() % (int)(1.8*xmax))-xmax;
     fish[i].location[1] = (rand() % (int)(1.8*ymax))-(0.9*ymax) + 30;
-    fish[i].location[2] = (rand() % (int)(1.8*zmax))-zmax;
+    fish[i].location[2] = (rand() % (int)(1.8*zmax))-zmax; */
     fish[i].homedepth = fish[i].location[1];
-    fish[i].speed = 1;
+    fish[i].speed = 1.0;
     fish[i].rotation = rand() % 360;
     fish[i].finrotation = (rand() % 6)-3;
     fish[i].size = ((float)(rand()%220))/100.0;
@@ -1994,6 +2009,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     fish[i].rotationspeed = 1;
     fish[i].idnumber[0] = (int)fmod((double)i,10);
     fish[i].idnumber[1] = (int)(fmod((double)i,100)/10);
+    fish[i].ydirection = (double)((rand() % 300) - 100)/100.0;
     if(i > 99)
   	 	fish[i].idnumber[2] = 1;
   	 else

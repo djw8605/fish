@@ -541,9 +541,25 @@ void comClass::init() {
 //	printf("after doc\n");
 //	fflush(stdout);
 //	printf("%s\n", XMLString::transcode(doc->getNodeName()));
+
+	XMLCh* clstr = XMLString::transcode("CLUSTER");
+	DOMNodeList* clstrlist = doc->getElementsByTagName(clstr);
+	delete clstr;
+	int q = 0;
+	for (q = 0; q < clstrlist->getLength(); q++) {
+	DOMNode* clstrnode = clstrlist->item(q);
+	DOMNamedNodeMap* clstrmap = clstrnode->getAttributes();
+
+	//local time for each cluster		
+	XMLCh* lt = XMLString::transcode("LOCALTIME");
+	char *localtime = XMLString::transcode(clstrmap->getNamedItem(lt)->getNodeValue());
+	delete lt;
+	
+	//number of nodes
 	XMLCh* host = XMLString::transcode("HOST");
 	DOMNodeList* list = doc->getElementsByTagName(host);
 	delete host;
+
 //	printf("after list\n");
 	int a = 0;
 #ifndef WIN32
@@ -562,6 +578,13 @@ void comClass::init() {
 	XMLCh *t = XMLString::transcode("NAME");
 	char *s = XMLString::transcode(map->getNamedItem(t)->getNodeValue());
 	delete t;
+
+	//last time node was heard from
+	XMLCh *tr = XMLString::transcode("REPORTED");
+	char *report = XMLString::transcode(map->getNamedItem(tr)->getNodeValue());
+	delete tr;
+	int lastHeardFrom = atoi(localtime)-atoi(report);
+	//printf("Name: %s Reported: %d Current: %d Diff: %d\n",s,atoi(report),atoi(localtime),lastHeardFrom);
 
 //	delete map;
 
@@ -585,7 +608,9 @@ void comClass::init() {
 		//fflush(stdout);
 
 	}
+	if (lastHeardFrom < 3600) {	
 	fishChange->checked = true;
+	}
 
 	if(!strcmp(s, "head")) {
 
@@ -690,6 +715,8 @@ void comClass::init() {
 #else
 	Sleep(1000/1000);
 #endif
+	}
+
 	}
 #ifndef WIN32
 	printf("Done\n");
@@ -858,11 +885,21 @@ Fish* comClass::addNode(char* name, ClusterInfo* cluster){
 	//NewFish[i].print = "tst";
 	//printf("after memory allocation\n");
 	//this is all copied from the main function
-	NewFish[i].location[0] = (rand() % (int)(1.8*xmax))-xmax;
+ if ((*NewFish[i].fishcluster == 'r') || (*NewFish[i].fishcluster == 'f')){
+    NewFish[i].location[0] = -(rand() % (int)(1.8*xmax));
     NewFish[i].location[1] = (rand() % (int)(1.8*ymax))-(0.9*ymax) + 30;
-    NewFish[i].location[2] = (rand() % (int)(1.8*zmax))-zmax;
+    NewFish[i].location[2] = -(rand() % (int)(1.8*zmax));
+ }
+ else if ((*NewFish[i].fishcluster == 'p') || (*NewFish[i].fishcluster == 'b')) {
+    NewFish[i].location[0] = (rand() % (int)(1.8*xmax));
+    NewFish[i].location[1] = (rand() % (int)(1.8*ymax))-(0.9*ymax) + 30;
+    NewFish[i].location[2] = (rand() % (int)(1.8*zmax));
+ }/*
+    NewFish[i].location[0] = (rand() % (int)(1.8*xmax))-xmax;
+    NewFish[i].location[1] = (rand() % (int)(1.8*ymax))-(0.9*ymax) + 30;
+    NewFish[i].location[2] = (rand() % (int)(1.8*zmax))-zmax; */
     NewFish[i].homedepth = NewFish[i].location[1];
-    NewFish[i].speed = 1;
+    NewFish[i].speed = 1.0;
     NewFish[i].rotation = rand() % 360;
     NewFish[i].finrotation = (rand() % 6)-3;
     NewFish[i].size = ((float)(rand()%100))/100.0;
@@ -877,6 +914,7 @@ Fish* comClass::addNode(char* name, ClusterInfo* cluster){
     NewFish[i].immune = 0;
     NewFish[i].targetrotation = NewFish[i].rotation;
     NewFish[i].rotationspeed = 1;
+    NewFish[i].ydirection = (double)((rand() % 300) - 100)/100.0;
     NewFish[i].idnumber[0] = (int)fmod((double)i,10);
     NewFish[i].idnumber[1] = (int)(fmod((double)i,100)/10);
 	NewFish[i].nodeinfo.init(statFields);

@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 #include <sys/types.h>
 #include "collisionMap.h"
 
@@ -56,14 +57,20 @@ extern collisionMap* cm;
 
 void collision_avoidance(int fishnum) {
 	double dist = 0;
-	double angle = 0, totalangle = 0, tempangle = 0;
+	double angle = 0, totalangle = 0, tempangle = 0, swarmAngle = 0;
 	int i = 0;
 	int numofFish = 0;
 	double min = 10000000;  //huge number just to throw off the min
 	int indexMin = 0;
 	double tempdist = 0;
-	
+	double ydir = 0.0;
+	double dx = 0.0;
+	double dz = 0.0;
+	srand( (unsigned) time( 0 ));
 	indexMin = cm->getClosestFish(fishnum);
+	ydir = cm->getSwarmYDirection(fishnum);
+	dx = cm->getSwarmX(fishnum);
+	dz = cm->getSwarmZ(fishnum);
 	//printf("found %i to be closest\n", indexMin);
 
 	
@@ -105,10 +112,12 @@ void collision_avoidance(int fishnum) {
 	//set the angle to the angle from the closest fish to the fish i'm on
 //	angle = atan2(fish[indexMin].location[0] - fish[fishnum].location[0], fish[fishnum].location[2] - fish[fishnum].location[2]);
 	angle = atan2(fish[indexMin].location[0] - fish[fishnum].location[0], fish[indexMin].location[2] - fish[fishnum].location[2]);
+	swarmAngle = atan2(dx - fish[fishnum].location[0], dz - fish[fishnum].location[2]);
 	min = cm->getDistance(indexMin, fishnum);
 	
+	
 	//walls of fish tank
-	if (min > (xmax-fish[fishnum].location[0])){
+/*	if (min > (xmax-fish[fishnum].location[0])){
 		angle = PI/2;
 		min = xmax-fish[fishnum].location[0];
 	}
@@ -124,6 +133,22 @@ void collision_avoidance(int fishnum) {
 		angle = PI;
 		min = fish[fishnum].location[2] - zmin;
 	}
+	if (fish[fishnum].location[1] < (ymin + 70))
+	  if ((rand() % 2) == 0)
+	    fish[fishnum].ydirection = 0;
+	  else {
+	    fish[fishnum].ydirection = 1;
+	    fish[fishnum].speed *= .1;
+	  }
+	
+	if (fish[fishnum].location[1] > (ymax - 70))
+	  if ((rand() % 2) == 0)
+	    fish[fishnum].ydirection = 0;
+	  else {
+	    fish[fishnum].ydirection = -1;
+	    fish[fishnum].speed *= .1;
+	  }
+*/
 	
 	//lighthouse test
 	tempdist = sqrt(pow((-bubblerloc[0]+20) - fish[fishnum].location[0], 2) + pow(20-fish[fishnum].location[2], 2));
@@ -137,17 +162,183 @@ void collision_avoidance(int fishnum) {
 	
 	//castle test
 	tempdist = sqrt(pow((bubblerloc[0]) - fish[fishnum].location[0], 2) + pow((bubblerloc[2])-fish[fishnum].location[2], 2));
-	if (min > tempdist-300 && fish[fishnum].location[1] < ymin+500) {
+	if (min > tempdist-200 && fish[fishnum].location[1] < ymin+500) {
+	    
 		angle = atan2(bubblerloc[0] - fish[fishnum].location[0], bubblerloc[2]-fish[fishnum].location[2]);
 		min = tempdist;
 	}
 	
 
-	
 		//make the target rotation the opposite way from the closest fish
 		//really, the fish are always running from the closest other fish	
-			angle += PI;
-			fish[fishnum].targetrotation = (180/PI)*angle;
+		//	angle += PI;
+		//	fish[fishnum].targetrotation = (180/PI)*angle;
+
+		//fish run away from fish of a different cluster
+		if ((*fish[fishnum].fishcluster != *fish[indexMin].fishcluster) && (min < 300)) {
+		  angle += PI;
+		  fish[fishnum].targetrotation = (180/PI) * angle;
+		  min = 300;
+		}
+		//run away from other fish
+		else if (min < (100)) {
+		  angle += PI;
+		  fish[fishnum].targetrotation = (180/PI) * angle;
+		  //fish[fishnum].ydirection = -fish[indexMin].ydirection;
+		  //fish[fishnum].speed = 10;
+		  //fish[fishnum].rotationspeed = 2;
+		  min = 100;
+		}
+		/*else if (dr > 0) {
+		  fish[fishnum].targetrotation = dr * ((rand() % 20) / 100);
+		  fish[fishnum].speed = 3;
+		  fish[fishnum].rotationspeed = 1.5;
+		  //fish[fishnum].ydirection = ydir;
+		}*/
+		
+		//stick with nearby fish by moving to group average position
+		else if ((dx > 0) && (dz > 0)) {
+		  fish[fishnum].targetrotation = (180/PI) * swarmAngle;// * ((100 - (rand() % 25)) / 100);
+		  //fish[fishnum].speed = 1.5 * (fish[fishnum].size + 1.0);
+		  //if ((*fish[fishnum].fishcluster == *fish[indexMin].fishcluster))
+		    //fish[fishnum].ydirection = fish[indexMin].ydirection;// * ((100 - (rand() % 25)) / 100);
+		 //if (rand() % 2 == 0) {
+		 //fish[fishnum].rotationspeed = 2.5;
+		 //fish[fishnum].speed = 3;
+		/*if (*fish[fishnum].fishcluster == *fish[indexMin].fishcluster) {
+		    fish[fishnum].ydirection = fish[indexMin].ydirection * ((100 - (rand() % 50)) / 100);
+		}*/
+		  if ((fish[fishnum].location[1] > (ydir + 30))) {
+		    if ((fish[fishnum].ydirection > 0.0));// && (fish[fishnum].ydirection >= -0.5))
+		      fish[fishnum].ydirection *= -1.0;
+		    //else if (fish[fishnum].ydirection < -0.5)
+		      //fish[fishnum].ydirection = 0.5;
+		  }
+		  else if ((fish[fishnum].location[1] < (ydir - 30))) {
+		    if ((fish[fishnum].ydirection < 0.0));// && (fish[fishnum].ydirection <= 0.5))
+		      fish[fishnum].ydirection *= -1.0;
+		    //else if (fish[fishnum].ydirection > 0.5)
+		      //fish[fishnum].ydirection = -0.5;
+		  }
+		 //}
+		//}
+		}
+		
+		//if (min < (200)) {
+		 //   fish[fishnum].targetrotation = /*((100 - (rand() % 25))/100) * fish[indexMin].rotation;
+		  /*if (min2 < 300) {
+		    fish[fishnum].targetrotation += (180/PI)*angle;
+		    //min2 = 300;
+		  }*/
+		//  min = 200;
+		//} 
+
+	//top and bottom of fish tank
+	if (fish[fishnum].location[1] < (ymin + 70)) {
+	  //if ((rand() % 2) == 0)
+	    //fish[fishnum].ydirection = 0.0;// + (double)((rand() % 1)/10);
+	  //else {
+	    fish[fishnum].ydirection = (double)(100 - rand() % 50)/100.0;// - (double)((rand() % 1)/10);
+
+	    //glRotated(-5, 1.0, 1.0, 0.0);
+	//}
+	  }
+	if (fish[fishnum].location[1] > (ymax - 70)) {
+	  //if ((rand() % 2) == 0)
+	    //fish[fishnum].ydirection = 0.0;// - (double)((rand() % 1)/10);
+	  //else {
+	    fish[fishnum].ydirection = (double)(100 - rand() % 50)/(-100.0);// + (double)((rand() % 1)/10);
+
+	    //glRotated(5, 1.0, 1.0, 0.0);
+	  //}
+	}
+
+      int cnt = 0;
+      #define TIMEUPDATE 10
+
+	//forces two clusters into left and right sections of tank if turned on
+     #ifdef CLUSTERSWARMS
+     if ((*fish[fishnum].fishcluster == 'p') || (*fish[fishnum].fishcluster == 'b')){
+       if (fish[fishnum].location[0] > (0)) {
+	 fish[fishnum].targetrotation = 210 + rand() % 120;
+       }
+     }
+     
+     if ((*fish[fishnum].fishcluster == 'r') || (*fish[fishnum].fishcluster == 'f')) {
+       if (fish[fishnum].location[0] < 0) {
+	 fish[fishnum].targetrotation = 30 + rand() % 120;
+       }
+     }
+     #endif
+
+	//walls of fish tank
+      if (fish[fishnum].location[2] > zmax - (fish[fishnum].size + 1) * 60) {
+	if (cnt < TIMEUPDATE) {
+	fish[fishnum].targetrotation = 120 + rand() % 120;
+	//fish[fishnum].rotationspeed = 0.5;
+	//fish[fishnum].speed = 0.5;
+	cnt++;
+	}
+	else
+	  cnt = 0;	
+	  //fish[fishnum].rotationspeed = 1;
+	if (fish[fishnum].location[2] > zmax - (fish[fishnum].size + 1) * 30) {
+	 fish[fishnum].location[2] = zmax - (fish[fishnum].size + 1) * 30;
+	 //fish[fishnum].targetrotation = 120 + rand() % 140;
+	 //fish[fishnum].rotationspeed *= 3;
+      }
+     }
+
+      if (fish[fishnum].location[2] < zmin + (fish[fishnum].size + 1) * 60) {
+	if (cnt < TIMEUPDATE) {
+	fish[fishnum].targetrotation = 300 + rand() % 120;
+	//fish[fishnum].rotationspeed = 0.5;
+	//fish[fishnum].speed = 0.5;
+	cnt++;
+	}
+	else
+	  cnt = 0;	
+	  //fish[fishnum].rotationspeed = 1;
+	if (fish[fishnum].location[2] < zmin + (fish[fishnum].size + 1) * 30) {
+	  fish[fishnum].location[2] = zmin + (fish[fishnum].size + 1) * 30;
+	 //fish[fishnum].targetrotation = 300 + rand() % 140;
+	 //fish[fishnum].rotationspeed *= 3;
+      }
+     }
+     
+      if (fish[fishnum].location[0] < xmin + (fish[fishnum].size + 1) * 60) {
+	if (cnt < TIMEUPDATE) {
+	fish[fishnum].targetrotation = 30 + rand() % 120;
+	//fish[fishnum].rotationspeed = 0.5;
+	//fish[fishnum].speed = 0.5;
+	cnt++;
+	}
+	else
+	  cnt = 0;	
+	  //fish[fishnum].rotationspeed = 1;  
+	if (fish[fishnum].location[0] < xmin + (fish[fishnum].size + 1) * 30) {
+	  fish[fishnum].location[0] = xmin + (fish[fishnum].size + 1) * 30;
+	 //fish[fishnum].targetrotation = 30 + rand() % 140;
+	 //fish[fishnum].rotationspeed *= 3;
+	}
+     }
+     
+      if (fish[fishnum].location[0] > xmax - (fish[fishnum].size + 1) * 60) {
+	if (cnt < TIMEUPDATE) {
+	fish[fishnum].targetrotation = 210 + rand() % 120;
+	//fish[fishnum].rotationspeed = 0.5;
+	//fish[fishnum].speed = 0.5;
+	cnt++;
+	}
+	else
+	  cnt = 0;	
+	  //fish[fishnum].rotationspeed = 1;
+	if (fish[fishnum].location[0] > xmax - (fish[fishnum].size + 1) * 30) {
+	  fish[fishnum].location[0] = xmax - (fish[fishnum].size + 1) * 30;
+	 //fish[fishnum].targetrotation = 210 + rand() % 140;
+	 //fish[fishnum].rotationspeed *= 3;
+	}
+     }
 
 	
 /*		if(fishnum == 1) {

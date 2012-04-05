@@ -47,7 +47,7 @@ extern freetype::font_data font;
 #pragma warning( disable: 4305 )
 
 //max size the fish will reach
-#define FISHMAXSIZE 1.8
+#define FISHMAXSIZE 1.3
 
 //size at which the fish begin to turn red
 #define STARTRED 1.2
@@ -61,7 +61,7 @@ extern freetype::font_data font;
 //used as the speed of the rotating color
 #define COLORROTATESPEED 2
 //used to change the size of the fish
-#define FISHSCALAR (500.0/((float)FISHCOUNT+200))
+#define FISHSCALAR (500.0/((float)FISHCOUNT+300))
 
 #define PI 3.14159265
 

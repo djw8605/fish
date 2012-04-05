@@ -114,7 +114,9 @@ public:
   double findirection;
   double speed;
   int alive;
-  int ydirection;
+  double ydirection;
+  double dx;
+  double dz;
 
   int colliding;
 

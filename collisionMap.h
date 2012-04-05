@@ -48,8 +48,13 @@ public:
     int getClosestFish(int fishNum);
     int getClosestFishLeft(int fishNum);
     int getClosestFishDown(int fishNum);
+    //float getSwarmDirection(int fishNum);
+    float getSwarmYDirection(int fishNum);
+    float getSwarmX(int fishNum);
+    float getSwarmZ(int fishNum);
     void updateDistances();
     float getDistance(int fishIndex1, int fishIndex2);
+
     
 
 private:
@@ -59,6 +64,12 @@ private:
         short* closestFish;
         ThreeFloat* positions;
         float counter;
+	float ycounter;
+	char* clusters;
+	//float dr2;
+	float* dx;
+	float* dz;
+	float* ydir;
 };
 
 
