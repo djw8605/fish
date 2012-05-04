@@ -88,7 +88,14 @@ void LabelDisplay::InitDisplayLists()
 		freetype::print(font, 30, (windowHeight-23.0)-(i*spaceBetween), clusters[i].name);
 
 	}
-	glEnable(GL_LIGHTING);
+
+        // And now the text on the bottom.  
+        glTranslatef(0.0, 0.0, 0.0);
+        glColor4f(0.0, 0.0, 0.0, 1.0);
+        freetype::print(font, 30, 5, "Health of the HCC Clusters");
+        // Done with bottom text
+	
+        glEnable(GL_LIGHTING);
 
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
